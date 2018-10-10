@@ -83,7 +83,7 @@ impl<'a, 'b> plugin::Plugin<Request<'a, 'b>> for UrlEncodedQuery {
 
     fn eval(req: &mut Request) -> QueryResult {
         match req.url.query() {
-            Some(ref query) => create_param_hashmap(&query),
+            Some(ref query) => parse(&query),
             None => Err(UrlDecodingError::EmptyQuery)
         }
     }
@@ -96,8 +96,12 @@ impl<'a, 'b> plugin::Plugin<Request<'a, 'b>> for UrlEncodedBody {
         req.get::<bodyparser::Raw>()
             .map(|x| x.unwrap_or("".to_string()))
             .map_err(|e| UrlDecodingError::BodyError(e))
-            .and_then(|x| create_param_hashmap(&x))
+            .and_then(|x| parse(&x))
     }
+}
+
+pub fn parse(data: &str) -> QueryResult {
+    create_param_hashmap(data)
 }
 
 /// Parse a urlencoded string into an optional HashMap.
